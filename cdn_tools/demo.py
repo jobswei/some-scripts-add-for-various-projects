@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/wzy/CDN")
+sys.path.append("/home/wzy/CDN_mod")
 import argparse
 import time
 import datetime
@@ -163,17 +163,17 @@ class Demo:
         self.verb_path=verb_path
         self.out_dir=output_dir
 
-    def _demo(self,source):
+    def _demo(self,source,filename=None):
         preds=self.predictor.predict(source)[0]
-        preds["filename"]=osp.basename(preds["filename"])
+        preds["filename"]=filename if filename else osp.basename(preds["filename"]) 
         preds=filter_res_num(preds,num=5)
         display(preds)
         print(preds["filename"])
         pairs=show_hoi(preds,self.obj_path,self.verb_path)
         print()
 
-        file_path=source
-        image=cv2.imread(file_path)
+        
+        image=cv2.imread(file_path) if type(source)==str else source
 
         for num,obj in enumerate(preds["predictions"]):
             (x1, y1, x2, y2),category=tuple(map(int,obj["bbox"])),int(obj["category_id"])
@@ -192,29 +192,34 @@ class Demo:
             # 更新 y 坐标以便下一行文字不会覆盖前一行
             y += 25
         cv2.imwrite(osp.join(self.out_dir,f"{preds['filename']}"), image)
-    def __call__(self,source):
+    def __call__(self,source,filename=None):
         if type(source)==list:
             for name in source:
-                self._demo(name)
+                self._demo(name,filename)
         elif type(source)==str:
-            self._demo(source)
+            self._demo(source,filename)
+        else:
+            image=np.array(source)
+            image=Image.fromarray(image)
+            self._demo(image,filename)
     
 def main(args):
     utils.init_distributed_mode(args)
+    # args=dict()
     device = torch.device(args.device)
     model, criterion, postprocessors = build_model(args)
     model.to(device)
     checkpoint = torch.load(args.pretrained, map_location='cpu')
     model.load_state_dict(checkpoint['model'])
     predictor=Predictor(model,postprocessors,
-            correct_mat_path="data/demo_video_fps2/hico/annotations/corre_hico.npy",
+            correct_mat_path="data/demo_video_fps2/hico3/annotations/corre_hico.npy",
             args=args)
     demor=Demo(predictor,
                "./outputs",
-               "./data/demo_video_fps2/hico/annotations/objs.txt",
-               "./data/demo_video_fps2/hico/annotations/verb.txt")
+               "./data/demo_video_fps2/hico3/annotations/objs.txt",
+               "./data/demo_video_fps2/hico3/annotations/verb.txt")
 
-    path="./data/demo_video_fps2/hico/images/test2015/"
+    path="./data/demo_video_fps2/hico3/images/test2015/"
     lis=os.listdir(path)
     # random.shuffle(lis)
     temp_lis=lis[:10]
@@ -233,13 +238,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-    args.pretrained="work_dir/12021/checkpoint_best.pth"
+    args.pretrained="work_dir/1211_cdn_l_lr_5e-5_bs16/checkpoint_best.pth"
     args.dataset_file="hico"
-    args.hoi_path="./data/demo_video_fps2/hico2"
+    args.hoi_path="./data/demo_video_fps2/hico3"
     # args.hoi_path="/home/wzy/CDN_mod/data/hico_20160224_det"
-    args.num_obj_classes=3
+    args.num_obj_classes=2
     args.num_verb_classes=1
-    args.backbone="resnet50"
+    args.backbone="resnet101"
     args.num_queries=64
     args.dec_layers_hopd=3
     args.dec_layers_interaction=0
@@ -249,4 +254,5 @@ if __name__ == '__main__':
     args.use_nms_filter=True
     args.batch_size=2
     args.device="cuda:4"
+    
     main(args)

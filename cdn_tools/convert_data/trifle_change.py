@@ -7,7 +7,7 @@ def align(img_information):
     img_information["file_name"]=img_information["filename"]
     del img_information["filename"]
     return img_information
-data_root="./data/demo_video_fps2/hico2"
+data_root="./data/demo_video_fps2/hico3"
 
 def change(mode):
     # 去掉没有hoi的数据
@@ -52,9 +52,28 @@ def change2(mode):
     print(f"error data: {count_error}")
     with open(osp.join(data_root,f"annotations/{mode}_hico.json"),"w") as fp:
         json.dump(lis,fp)
-print("train")
-change("trainval")
-change2("trainval")
-print("test")
-change("test")
-change2("test")
+def change3(mode):
+    # 物体标签都写成2
+    with open(osp.join(data_root,f"annotations/{mode}_hico.json")) as fp:
+        origin_lis=json.load(fp)
+    lis=[]
+    num=0
+    for info in tqdm.tqdm(origin_lis):
+        hoi_lis=info["hoi_annotation"]
+        bbox_lis=info["annotations"]
+        for bbox in bbox_lis:
+            if bbox["category_id"]==3:
+                bbox["category_id"]=2
+                num+=1
+        lis.append(info)
+    print(num)
+    with open(osp.join(data_root,f"annotations/{mode}_hico.json"),"w") as fp:
+        json.dump(lis,fp)
+
+# print("train")
+# # change("trainval")
+# change2("trainval")
+# print("test")
+# change("test")
+# change2("test")
+change3("test")

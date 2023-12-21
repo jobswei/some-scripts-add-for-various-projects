@@ -112,8 +112,13 @@ class Predictor:
 
     def predict(self,source):
         transform=make_hico_transforms("val")
-        img=Image.open(source)
+        if type(source)==str: # 输入路径
+            img=Image.open(source)
+        else:
+            img=source
         samples,_=transform(img,None)
+        import pdb;pdb.set_trace()
+
         samples = samples.to(self.device)
         samples=samples.unsqueeze(dim=0)
         outputs = self.model(samples)
