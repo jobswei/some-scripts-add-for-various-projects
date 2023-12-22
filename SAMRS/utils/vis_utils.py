@@ -7,7 +7,7 @@ import matplotlib.patches as patches
 import json
 from typing import *
 from .path_utils import *
-
+import numpy as np
 
 def show_img(img):
     if type(img)==str:
@@ -51,8 +51,15 @@ def visualize_bbox(image,bbox):
     
     for box in bbox:
         x1,y1,x2,y2=tuple(map(int,box))
-        image=cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+        image=cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
     # 显示图像
     # cv2.imshow('image', image)
     show_img(image)
 
+def unsqueeze_seg(seg):
+    seg=np.array(seg).reshape(-1,2).tolist()
+    return seg
+
+def squeeze_seg(seg):
+    seg=np.array(seg).flatten().tolist()
+    return seg

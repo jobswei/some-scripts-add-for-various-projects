@@ -12,6 +12,7 @@ data_root="/home/wzy/ultralytics/data/SAMRS/images"
 gt_root="/home/wzy/ultralytics/data/SAMRS/ins"
 mask_root="/home/wzy/ultralytics/data/SAMRS/gray"
 ann_root="/home/wzy/ultralytics/ann_1218"
+label_root="/home/wzy/ultralytics/data/SAMRS/hbbtxts/"
 ann_filename="anns_1.json"
 
 def init():
@@ -51,3 +52,12 @@ def get_gt(id):
     for i in range(len(gt)):
         new_gt.append({"category":gt[i]["category"],"bbox":gt[i]["bbox"].tolist()})
     return new_gt
+
+def get_label(id):
+    with open(label_root+id+".txt","r") as fp:
+        lis=fp.readlines()
+    label_lis=[]
+    for i in lis:
+        i=i.split(" ")
+        label_lis.append({"category":i[-2], "category_id":i[-1]})
+    return label_lis

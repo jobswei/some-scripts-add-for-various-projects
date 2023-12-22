@@ -34,22 +34,21 @@ def label_for_id(id):
     return seg_label_lis
 
 
+for num in range(1,11):
+    ann_filename=path_utils.ann_filename=f"anns_{num}.json"
+    path_utils.init()
+    test_path()
+    id_lis=[]
+    with open(osp.join(ann_root,ann_filename),"r") as fp:
+        anns=json.load(fp)
+        for i in anns["images"]:
+            id_lis.append(i["file_name"][:-4])
 
-path_utils.ann_filename="ann_2.json"
-path_utils.init()
-test_path()
-id_lis=[]
-with open(osp.join(ann_root,ann_filename),"r") as fp:
-    anns=json.load(fp)
-    for i in anns["images"]:
-        id_lis.append(i["file_name"][:-4])
+    ann_lis=[]
+    for id in tqdm.tqdm(id_lis):
+        seg_label_lis=label_for_id(id)
+        ann_lis.append({"file_name":id+".png","segmentation":seg_label_lis})
 
-ann_lis=[]
-for id in tqdm.tqdm(id_lis):
-    seg_label_lis=label_for_id(id)
-    ann_lis.append({"file_name":id+".png","segmentation":seg_label_lis})
-
-ann_path="ann_1221"
-
-with open(osp.join(ann_path,ann_filename),"w") as fp:
-    json.dump(ann_lis,fp)
+    ann_path="ann_1221"
+    with open(osp.join(ann_path,ann_filename),"w") as fp:
+        json.dump(ann_lis,fp)

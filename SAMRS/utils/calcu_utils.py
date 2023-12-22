@@ -7,7 +7,7 @@ import matplotlib.patches as patches
 import json
 from typing import *
 from .vis_utils import *
-
+import numpy as np
 def _align_bbox(bbox):
     x1, y1, x2, y2 = bbox
     if x1 > x2:
@@ -58,3 +58,19 @@ def seg2box(seg):
         box[2]=max(x2,box[2])
         box[3]=max(y2,box[3])
     return box
+
+def box2ploy(bbox):
+    ploy=[(bbox[0],bbox[1]),(bbox[2],bbox[1]),(bbox[2],bbox[3]),(bbox[0],bbox[3])]
+    return ploy
+
+def point_refine(point,bbox):
+    x, y = tuple(point)
+    x1, y1, x2, y2 = tuple(bbox)
+    res_x= x if x1 <= x <= x2 else (x1 if np.abs(x-x1)<np.abs(x-x2) else x2)
+    res_y= y if y1 <= y <= y2 else (y1 if np.abs(y-y1)<np.abs(y-y2) else y2)
+    return (res_x,res_y)
+
+def inbox(point:tuple, bbox:list):
+    x, y = tuple(point)
+    x1, y1, x2, y2 = tuple(bbox)
+    return x1 <= x <= x2 and y1 <= y <= y2
